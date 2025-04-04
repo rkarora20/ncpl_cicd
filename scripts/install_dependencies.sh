@@ -1,5 +1,5 @@
 #!/bin/bash
 # Update system packages and install necessary dependencies
-sudo apt-get update -y
-sudo apt-get install -y nodejs npm
+sudo yum update -y
+sudo yum install -y nodejs npm
 
