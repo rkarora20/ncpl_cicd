@@ -1,15 +1,14 @@
 version: 0.0
 os: linux
 files:
-  - source: /  # Path to your source code
-    destination: /var/www/html  # Destination directory on EC2 instance
-
+  - source: /
+    destination: /var/www/html
 hooks:
-  AfterInstall:
+  BeforeInstall:
     - location: scripts/install_dependencies.sh
       timeout: 300
       runas: root
-  ApplicationStart:
+  AfterInstall:
     - location: scripts/start_server.sh
       timeout: 300
       runas: root
