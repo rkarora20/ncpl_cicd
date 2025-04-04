@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      # Install dependencies (if any)
+      echo Installing dependencies...
+      npm install
+  build:
+    commands:
+      # Compile or build your application (for Node.js, this could be transpiling, bundling, etc.)
+      echo Building the app...
+      # If you're running a build command like webpack, or preparing your app for deployment, add it here.
+  post_build:
+    commands:
+      # This is where you can create an artifact (like a zip file) to be deployed
+      echo Build completed on `date`
+artifacts:
+  files:
+    - '**/*'  # This means everything in the repo will be included in the build artifact
+    - '!**/node_modules/**/*'  # Exclude node_modules if not needed in the deployment artifact
+
