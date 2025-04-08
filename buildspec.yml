@@ -1,22 +1,38 @@
 version: 0.2
 
+env:
+  variables:
+    IMAGE_REPO_NAME: "nodejs-app"          # Your ECR repo name
+    CONTAINER_NAME: "nodejs-container"     # ECS container name in task definition
+
 phases:
   install:
+    runtime-versions:
+      nodejs: 18
     commands:
-      # Install dependencies (if any)
-      echo Installing dependencies...
+      echo Installing Node.js dependencies...
       npm install
+
+  pre_build:
+    commands:
+      echo Logging in to Amazon ECR...
+      aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
+
   build:
     commands:
-      # Compile or build your application (for Node.js, this could be transpiling, bundling, etc.)
-      echo Building the app...
-      # If you're running a build command like webpack, or preparing your app for deployment, add it here.
+      echo Building the Docker image...
+      docker build -t $IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION .
+      docker tag $IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION $ECR_URI/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
+
   post_build:
     commands:
-      # This is where you can create an artifact (like a zip file) to be deployed
+      echo Pushing Docker image to ECR...
+      docker push $ECR_URI/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      echo Writing imagedefinitions.json for ECS deployment...
+      printf '[{"name":"%s","imageUri":"%s"}]' "$CONTAINER_NAME" "$ECR_URI/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION" > imagedefinitions.json
       echo Build completed on `date`
+
 artifacts:
   files:
-    - '**/*'  # This means everything in the repo will be included in the build artifact
-    - '!**/node_modules/**/*'  # Exclude node_modules if not needed in the deployment artifact
+    - imagedefinitions.json
 
